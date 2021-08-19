@@ -1,0 +1,34 @@
+import request from 'supertest';
+import { collapseTextChangeRangesAcrossMultipleVersions } from 'typescript';
+import { app } from '../../app';
+//import { Ticket  } from '../../models/ticket';;
+it('return 404 if ticket is not found', async () => {
+   await request(app)
+    .post('/api/tickets/23asdadfasefas')
+    .send() 
+    .expect(404); 
+ 
+});
+
+it('return the ticket if the ticket is found', async () => {
+    const title = 'Test title'; 
+    const price = 23; 
+    
+    const response = await request(app)
+        .post('/api/tickets')
+        .set('Cookie', global.signin())
+        .send({
+                title, price  
+            }) 
+        .expect(201); 
+  
+    const ticketResponse = await request(app)
+    .get(`/api/tickets/${response.body.id}`)
+    .send() ;
+    //.expect(200);
+    
+    expect(ticketResponse.status).toEqual(200);
+    expect(ticketResponse.body.title).toEqual(title); 
+
+  });
+  

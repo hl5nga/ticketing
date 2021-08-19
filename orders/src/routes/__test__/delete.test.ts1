@@ -1,0 +1,38 @@
+import request from 'supertest';
+import { collapseTextChangeRangesAcrossMultipleVersions } from 'typescript';
+import { app } from '../../app';
+import { Ticket  } from '../../models/ticket';
+import { Order , OrderStatus  } from '../../models/order';
+import { natsWrapper } from '../../nats-wrapper';
+ 
+it('order deleted ', async () => {
+  const userOne = global.signin();  
+  const ticket = Ticket.build({ 
+    title : 'test 111', 
+    price:23
+  }); 
+  await ticket.save(); 
+
+
+  const response = await request(app)
+    .post('/api/orders')
+    .set('Cookie', userOne)
+    .send({  ticketId : ticket.id })
+    .expect(201);
+ 
+
+  const orderResponse = await request(app)
+    .delete(`/api/orders/${response.body.id}`)
+    .set('Cookie', userOne)
+    .send() 
+    .expect(204);
+
+
+  const cancelOrder = await Order.findById(response.body.id)  ; 
+  console.log(cancelOrder!.status);
+  expect(cancelOrder!.status).toEqual( OrderStatus.Cancelled);
+   
+  expect( natsWrapper.client.publish).toHaveBeenCalled();
+
+  });
+  

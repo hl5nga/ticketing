@@ -1,0 +1,31 @@
+import request from 'supertest';
+import { app } from '../../app';
+import mongoose from 'mongoose';
+import { Ticket  } from '../../models/ticket';
+import { Order , OrderStatus  } from '../../models/order';
+
+  
+it('can fetch a list of tickets', async () => {
+  
+  const userOne = global.signin();  
+  const ticket = Ticket.build({ 
+    title : 'test 111', 
+    price:23
+  }); 
+  await ticket.save(); 
+
+
+  await request(app)
+    .post('/api/orders')
+    .set('Cookie', userOne)
+    .send({  ticketId : ticket.id })
+    .expect(201);
+ 
+  const response = await request(app)
+    .get('/api/orders')
+    .set('Cookie', userOne)
+    .send()
+    .expect(200);
+  
+  expect(response.body.length).toEqual(1);
+});

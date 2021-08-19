@@ -1,0 +1,43 @@
+import {  OrderCancelledEvent, OrderStatus } from  '@goodmanzticket/common'
+import { OrderCancelledListener } from '../order-cancelled-listener'
+import { natsWrapper } from "../../../nats-wrapper"
+import { Message } from 'node-nats-streaming'
+import mongoose from 'mongoose'
+import { Order } from '../../../models/order'
+//import { Ticket } from '../../../models/ticket'
+
+const setup =async () => { 
+    const listener = new OrderCancelledListener(natsWrapper.client)
+    const orderId = mongoose.Types.ObjectId().toHexString(); 
+    const order = Order.build({
+        id: mongoose.Types.ObjectId().toHexString(), 
+        status: OrderStatus.Created, 
+        price : 21,
+        version: 0 ,
+        userId : 'testdada' 
+    })
+    order.save(); 
+    console.log (order);
+    const data : OrderCancelledEvent ['data'] = { 
+        id: orderId ,  
+        version: 1, 
+        ticket: {
+            id:  'asdfa' , 
+        }
+    };
+    // @ts-ignore
+    const msg: Message = { 
+        ack: jest.fn()
+    };
+    return { listener, order, data,  msg};
+}
+
+it( 'set usere id of the ticket ', async() => { 
+    const {  listener,  order,  data,  msg}  = await setup(); 
+    await listener.onMessage(data, msg);
+
+    const updatedOrder = await Order.findById(order.id);
+    expect(updatedOrder!.status).toEqual(OrderStatus.Cancelled) 
+    
+});
+ 

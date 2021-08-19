@@ -1,0 +1,46 @@
+import { Message } from 'node-nats-streaming';
+import { natsWrapper } from "../../../nats-wrapper";
+import { TicketUpdatedListener } from '../ticket-update-listener';
+import { TicketUpdatedEvent } from '@goodmanzticket/common';
+
+import mongoose from 'mongoose';
+import { Ticket} from '../../../models/ticket';
+
+const setup=async() => { 
+    const listener = new TicketUpdatedListener(natsWrapper.client); 
+    
+    const ticket = Ticket.build ({ 
+        id: mongoose.Types.ObjectId().toHexString(),
+        title : 'concenrt',
+        price : 20 
+    })
+     
+    await ticket.save();  // New saved 
+
+    const data: TicketUpdatedEvent['data'] = { 
+        id: ticket.id, 
+        version: ticket.version+1  , 
+        title: 'test update', 
+        price : 21.9,
+        userId:  'aaaa'
+    }
+    // @ts-ignore 
+    const msg : Message = { 
+        ack: jest.fn()
+    }
+    return { listener, data, msg, ticket};
+}
+
+it ( 'Created and save a ticket ' , async () => { 
+    //cereate instance listener 
+    const { listener, data, msg, ticket} = await setup(); 
+    // create face event 
+    await listener.onMessage(data, msg)
+    
+    
+    const updateTicket = await Ticket.findById(ticket.id); 
+    console.log (updateTicket)
+    expect ( updateTicket!.title ).toEqual(data.title);
+   
+});
+ 
