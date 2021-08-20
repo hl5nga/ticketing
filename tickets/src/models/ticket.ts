@@ -23,6 +23,7 @@ interface TicketDoc extends mongoose.Document {
   userId: string;
   version: number; 
   orderId?: string;  //? is optional 
+  createdTime?: string;   
 }
 
 // const userSchema = new mongoose.Schema<UserDoc>({})
@@ -42,12 +43,17 @@ const ticketSchema = new mongoose.Schema({
   orderId: { 
     type: String, 
 
+  },
+  createdTime : { 
+    type: String,
   }
+
 
 }, { 
   toJSON: { 
     transform(doc, ret){
       ret.id = ret._id; 
+      ret.createdTime = ret._id.getTimestamp();
       delete ret._id;
     }
   }

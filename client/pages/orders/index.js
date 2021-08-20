@@ -1,7 +1,15 @@
+import Moment from 'react-moment';
+import moment from 'moment';
+
+
 const OrderIndex = ({orders}) => { 
     return  <ul>
         { orders.map(order => { 
-            return  <li key={order.id}>{order.ticket.title} - {order.status} : {order.created} </li>
+            return  <li key={order.id}>{order.ticket.title} - {order.status} : {order.created}  
+                            <Moment format="YYYY/MM/DD HH:mm">
+                                {order.createdTime}
+                            </Moment>
+                </li>
         })}
     </ul>
 }

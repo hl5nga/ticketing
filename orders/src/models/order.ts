@@ -26,6 +26,7 @@ interface OrderDoc extends mongoose.Document {
   expireAt: Date; 
   ticket:TicketDoc; 
   version: number;
+  createdTime?: string;   
 }
 
 // const userSchema = new mongoose.Schema<UserDoc>({})
@@ -46,12 +47,16 @@ const OrderSchema = new mongoose.Schema({
   ticket: { 
     type: mongoose.Schema.Types.ObjectId, 
       ref: 'Ticket'
+  },
+  createdTime : { 
+    type: String,
   }
 
 }, { 
   toJSON: { 
     transform(doc, ret){
       ret.id = ret._id; 
+      ret.createdTime = ret._id.getTimestamp();
       delete ret._id;
     }
   }
