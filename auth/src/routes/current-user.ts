@@ -1,12 +1,10 @@
-import expres from 'express';
-const router = expres.Router();
-
+import express from 'express';
 import { currentUser } from '@goodmanzticket/common';
-import { requireAuth } from '@goodmanzticket/common';
 
-router.get('/api/users/currentuser' , currentUser ,requireAuth ,  (req,res) => {
-    res.send ({ currentUser : req.currentUser || null });
-    //res.send({}) ;
+const router = express.Router();
+
+router.get('/api/users/currentuser', currentUser, (req, res) => {
+  res.send({ currentUser: req.currentUser || null });
 });
 
-export {router as currentUserRouter};
+export { router as currentUserRouter };
